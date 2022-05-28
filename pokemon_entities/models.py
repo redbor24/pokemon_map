@@ -6,7 +6,7 @@ class Pokemon(models.Model):
     image = models.ImageField(upload_to='pokemons', null=True)
 
     def __str__(self):
-        return f'{self.title}'
+        return f'id: {self.id}, {self.title}'
 
 
 class PokemonEntity(models.Model):
