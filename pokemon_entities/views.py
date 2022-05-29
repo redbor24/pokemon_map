@@ -68,6 +68,7 @@ def show_pokemon(request, pokemon_id):
                 'pokemon_id': pokemon.id,
                 'img_url': pokemon.image.url if pokemon.image else None,
                 'title_ru': pokemon.title,
+                'description': pokemon.description
             }
             break
     else:

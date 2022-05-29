@@ -5,7 +5,7 @@ from pokemon_entities.models import Pokemon, PokemonEntity
 
 @admin.register(Pokemon)
 class PokemonAdmin(admin.ModelAdmin):
-    list_display = ('title',)
+    list_display = ('title', 'description')
 
 
 @admin.register(PokemonEntity)
