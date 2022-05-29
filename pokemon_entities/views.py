@@ -65,12 +65,16 @@ def show_pokemon(request, pokemon_id):
     for pokemon in Pokemon.objects.all():
         if pokemon.id == int(pokemon_id):
             requested_pokemon = {
-                'pokemon_id': pokemon.id,
-                'img_url': pokemon.image.url if pokemon.image else None,
+                # 'pokemon_id': pokemon.id,
+                'pokemon_id': pokemon,
+                # 'img_url': pokemon.image.url if pokemon.image else None,
+                'img_url': pokemon.img_url(),
                 'title_ru': pokemon.title_ru,
                 'title_en': pokemon.title_en,
                 'title_jp': pokemon.title_jp,
-                'description': pokemon.description
+                'description': pokemon.description,
+                'next_evolution': pokemon.next_evolution,
+                'previous_evolution': pokemon.previous_evolution
             }
             break
     else:
