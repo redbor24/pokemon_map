@@ -1,11 +1,12 @@
-import folium
+import os
 
+import folium
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from django.utils import timezone
 
 from pokemon_entities.models import Pokemon, PokemonEntity
-
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -22,8 +23,6 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
     )
     folium.Marker(
         [lat, lon],
-        # Warning! `tooltip` attribute is disabled intentionally
-        # to fix strange folium cyrillic encoding bug
         icon=icon,
     ).add_to(folium_map)
 
@@ -38,7 +37,7 @@ def show_all_pokemons(request):
                 folium_map,
                 pokemon_entity.lat,
                 pokemon_entity.lon,
-                request.build_absolute_uri(pokemon_entity.pokemon.image.url)
+                request.build_absolute_uri(get_img_url(pokemon_entity.pokemon))
             )
         else:
             add_pokemon(
@@ -51,7 +50,7 @@ def show_all_pokemons(request):
     for pokemon in Pokemon.objects.all():
         pokemons_on_page.append({
             'pokemon_id': pokemon.id,
-            'img_url': pokemon.image.url if pokemon.image else None,
+            'img_url': get_img_url(pokemon),
             'title_ru': pokemon.title_ru
         })
 
@@ -64,17 +63,40 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     for pokemon in Pokemon.objects.all():
         if pokemon.id == int(pokemon_id):
+            try:
+                next_evol_pokemon = Pokemon.objects.get(previous_evolution=pokemon_id)
+                pokemon_next_evol = {
+                    'pokemon_id': next_evol_pokemon.id,
+                    'img_url': get_img_url(next_evol_pokemon),
+                    'title_ru': next_evol_pokemon.title_ru,
+                    'title_en': next_evol_pokemon.title_en,
+                    'title_jp': next_evol_pokemon.title_jp,
+                    'description': next_evol_pokemon.description,
+                }
+            except ObjectDoesNotExist:
+                pokemon_next_evol = {}
+
+            if pokemon.previous_evolution:
+                pokemon_prev_evol = {
+                    'pokemon_id': pokemon.previous_evolution.id,
+                    'img_url': get_img_url(pokemon.previous_evolution),
+                    'title_ru': pokemon.previous_evolution.title_ru,
+                    'title_en': pokemon.previous_evolution.title_en,
+                    'title_jp': pokemon.previous_evolution.title_jp,
+                    'description': pokemon.previous_evolution.description,
+                }
+            else:
+                pokemon_prev_evol = {}
+
             requested_pokemon = {
-                # 'pokemon_id': pokemon.id,
                 'pokemon_id': pokemon,
-                # 'img_url': pokemon.image.url if pokemon.image else None,
-                'img_url': pokemon.img_url(),
+                'img_url': get_img_url(pokemon),
                 'title_ru': pokemon.title_ru,
                 'title_en': pokemon.title_en,
                 'title_jp': pokemon.title_jp,
                 'description': pokemon.description,
-                'next_evolution': pokemon.next_evolution,
-                'previous_evolution': pokemon.previous_evolution
+                'next_evolution': pokemon_next_evol,
+                'previous_evolution': pokemon_prev_evol
             }
             break
     else:
@@ -87,7 +109,7 @@ def show_pokemon(request, pokemon_id):
                 folium_map,
                 pokemon_entity.lat,
                 pokemon_entity.lon,
-                request.build_absolute_uri(pokemon_entity.pokemon.image.url)
+                request.build_absolute_uri(get_img_url(pokemon_entity.pokemon))
             )
         else:
             add_pokemon(
@@ -100,3 +122,10 @@ def show_pokemon(request, pokemon_id):
         'map': folium_map._repr_html_(),
         'pokemon': requested_pokemon
     })
+
+
+def get_img_url(pokemon):
+    if os.path.isfile(pokemon.image.path):
+        return pokemon.image.url
+    else:
+        return DEFAULT_IMAGE_URL
