@@ -67,7 +67,7 @@ def show_pokemon(request, pokemon_id):
         pokemon = get_object_or_404(Pokemon, id=pokemon_id)
         pokemon_next_evols = []
         try:
-            for evol in pokemon.prev_evolutions.all():
+            for evol in pokemon.next_evolutions.all():
                 pokemon_next_evols.append({
                     'pokemon_id': evol.id,
                     'img_url': get_img_url(evol),

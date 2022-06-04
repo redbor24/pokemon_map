@@ -11,7 +11,7 @@ class Pokemon(models.Model):
         'Pokemon',
         verbose_name='Предыдущий этап эволюции',
         on_delete=models.DO_NOTHING,
-        related_name='prev_evolutions',
+        related_name='next_evolutions',
         null=True,
         blank=True
     )
