@@ -65,18 +65,19 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     try:
         pokemon = get_object_or_404(Pokemon, id=pokemon_id)
+        pokemon_next_evols = []
         try:
-            next_evol_pokemon = Pokemon.objects.get(previous_evolution=pokemon_id)
-            pokemon_next_evol = {
-                'pokemon_id': next_evol_pokemon.id,
-                'img_url': get_img_url(next_evol_pokemon),
-                'title_ru': next_evol_pokemon.title_ru,
-                'title_en': next_evol_pokemon.title_en,
-                'title_jp': next_evol_pokemon.title_jp,
-                'description': next_evol_pokemon.description,
-            }
+            for evol in pokemon.prev_evolutions.all():
+                pokemon_next_evols.append({
+                    'pokemon_id': evol.id,
+                    'img_url': get_img_url(evol),
+                    'title_ru': evol.title_ru,
+                    'title_en': evol.title_en,
+                    'title_jp': evol.title_jp,
+                    'description': evol.description,
+                })
         except ObjectDoesNotExist:
-            pokemon_next_evol = {}
+            pass
 
         if pokemon.previous_evolution:
             pokemon_prev_evol = {
@@ -97,7 +98,7 @@ def show_pokemon(request, pokemon_id):
             'title_en': pokemon.title_en,
             'title_jp': pokemon.title_jp,
             'description': pokemon.description,
-            'next_evolution': pokemon_next_evol,
+            'next_evolutions': pokemon_next_evols,
             'previous_evolution': pokemon_prev_evol
         }
     except Http404:

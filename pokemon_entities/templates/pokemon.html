@@ -30,6 +30,7 @@
             <div class="row">
               {% if pokemon.previous_evolution %}
                 <div class="col-5 clearfix p-2 m-2">
+                  <h6 class="d-flex justify-content-center m-2">Из кого эволюционировал</h6>
                   <div class="img-thumbnail">
                     <a href="{% url 'pokemon' pokemon.previous_evolution.pokemon_id %}">
                       <div class="d-flex justify-content-center">
@@ -38,20 +39,21 @@
                       </div>
                     </a>
                   </div>
-                  <h6 class="d-flex justify-content-center m-2">Из кого эволюционировал</h6>
                 </div>
               {% endif %}
-              {% if pokemon.next_evolution %}
+              {% if pokemon.next_evolutions %}
                 <div class="col-5 clearfix p-2 m-2">
-                  <div class="img-thumbnail">
-                    <a href="{% url 'pokemon' pokemon.next_evolution.pokemon_id %}">
-                      <div class="d-flex justify-content-center">
-                        <img class="pull-left mr-2 float-left" src="{{pokemon.next_evolution.img_url}}" style="height:50px; width:50px">
-                        <p class="align-middle m-0" style="line-height:50px; font-size: 20px;">{{pokemon.next_evolution.title_ru}}</p>
-                      </div>
-                    </a>
-                  </div>
                   <h6 class="d-flex justify-content-center m-2">В кого эволюционирует</h6>
+                  {% for nex_evol in pokemon.next_evolutions %}
+                    <div class="img-thumbnail">
+                      <a href="{% url 'pokemon' nex_evol.pokemon_id %}">
+                        <div class="d-flex justify-content-center">
+                          <img class="pull-left mr-2 float-left" src="{{nex_evol.img_url}}" style="height:50px; width:50px">
+                          <p class="align-middle m-0" style="line-height:50px; font-size: 20px;">{{nex_evol.title_ru}}</p>
+                        </div>
+                      </a>
+                    </div>
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>
