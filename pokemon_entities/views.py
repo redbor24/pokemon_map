@@ -2,11 +2,8 @@ import os
 
 import folium
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from django.http import Http404
 
 from pokemon_entities.models import Pokemon, PokemonEntity
 
@@ -63,46 +60,43 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
+    pokemon = get_object_or_404(Pokemon, id=pokemon_id)
+    pokemon_next_evols = []
     try:
-        pokemon = get_object_or_404(Pokemon, id=pokemon_id)
-        pokemon_next_evols = []
-        try:
-            for evol in pokemon.next_evolutions.all():
-                pokemon_next_evols.append({
-                    'pokemon_id': evol.id,
-                    'img_url': get_img_url(evol),
-                    'title_ru': evol.title_ru,
-                    'title_en': evol.title_en,
-                    'title_jp': evol.title_jp,
-                    'description': evol.description,
-                })
-        except ObjectDoesNotExist:
-            pass
+        for evol in pokemon.next_evolutions.all():
+            pokemon_next_evols.append({
+                'pokemon_id': evol.id,
+                'img_url': get_img_url(evol),
+                'title_ru': evol.title_ru,
+                'title_en': evol.title_en,
+                'title_jp': evol.title_jp,
+                'description': evol.description,
+            })
+    except ObjectDoesNotExist:
+        pass
 
-        if pokemon.previous_evolution:
-            pokemon_prev_evol = {
-                'pokemon_id': pokemon.previous_evolution.id,
-                'img_url': get_img_url(pokemon.previous_evolution),
-                'title_ru': pokemon.previous_evolution.title_ru,
-                'title_en': pokemon.previous_evolution.title_en,
-                'title_jp': pokemon.previous_evolution.title_jp,
-                'description': pokemon.previous_evolution.description,
-            }
-        else:
-            pokemon_prev_evol = {}
-
-        requested_pokemon = {
-            'pokemon_id': pokemon,
-            'img_url': get_img_url(pokemon),
-            'title_ru': pokemon.title_ru,
-            'title_en': pokemon.title_en,
-            'title_jp': pokemon.title_jp,
-            'description': pokemon.description,
-            'next_evolutions': pokemon_next_evols,
-            'previous_evolution': pokemon_prev_evol
+    if pokemon.previous_evolution:
+        pokemon_prev_evol = {
+            'pokemon_id': pokemon.previous_evolution.id,
+            'img_url': get_img_url(pokemon.previous_evolution),
+            'title_ru': pokemon.previous_evolution.title_ru,
+            'title_en': pokemon.previous_evolution.title_en,
+            'title_jp': pokemon.previous_evolution.title_jp,
+            'description': pokemon.previous_evolution.description,
         }
-    except Http404:
-        return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
+    else:
+        pokemon_prev_evol = {}
+
+    requested_pokemon = {
+        'pokemon_id': pokemon,
+        'img_url': get_img_url(pokemon),
+        'title_ru': pokemon.title_ru,
+        'title_en': pokemon.title_en,
+        'title_jp': pokemon.title_jp,
+        'description': pokemon.description,
+        'next_evolutions': pokemon_next_evols,
+        'previous_evolution': pokemon_prev_evol
+    }
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for entity in pokemon.entities.all():
