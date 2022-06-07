@@ -62,18 +62,15 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     pokemon = get_object_or_404(Pokemon, id=pokemon_id)
     pokemon_next_evols = []
-    try:
-        for evol in pokemon.next_evolutions.all():
-            pokemon_next_evols.append({
-                'pokemon_id': evol.id,
-                'img_url': get_img_url(evol),
-                'title_ru': evol.title_ru,
-                'title_en': evol.title_en,
-                'title_jp': evol.title_jp,
-                'description': evol.description,
-            })
-    except ObjectDoesNotExist:
-        pass
+    for evol in pokemon.next_evolutions.all():
+        pokemon_next_evols.append({
+            'pokemon_id': evol.id,
+            'img_url': get_img_url(evol),
+            'title_ru': evol.title_ru,
+            'title_en': evol.title_en,
+            'title_jp': evol.title_jp,
+            'description': evol.description,
+        })
 
     if pokemon.previous_evolution:
         pokemon_prev_evol = {
